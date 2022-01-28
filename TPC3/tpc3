@@ -1,0 +1,65 @@
+sig Hash {}
+abstract sig Object {
+  hash : one Hash
+}
+
+sig Blob extends Object {}
+
+sig Name {}
+sig Tree extends Object {
+  objects : Hash -> Name
+}
+
+sig Commit extends Object {
+  tree : one Hash,
+  parent : set Hash
+}
+
+pred Invs {
+
+    //link: http://alloy4fun.inesctec.pt/cn67K9fnw6pEcFw6z
+  
+    //Invariante 1
+    //Uma arvore não poder ter 2 objectos diferentes com o mesmo nome
+    all t: Tree, n: Name | lone t.objects.n
+      
+  
+    //Invariante 2
+    //Cada hash é única
+    all o1: Object, o2: Object | o1 != o2 implies o1.hash != o2.hash  
+  
+  
+    //Invariante 3
+    //Se 2 commits tiverem a mesma tree e o mesmo parent, então são o mesmo commit
+    all c1: Commit, c2: Commit | c1.tree = c2.tree and c1.parent = c2.parent implies c1 = c2 
+    //Se 2 arvores tiverem os mesmos objectos, então são a mesma árvore
+    all t1: Tree, t2: Tree | t1.objects = t2.objects implies t1 = t2
+  
+
+    //Invariante 4
+    //Uma tree só pode ser contituída por objectos do tipo Blob ou Tree
+    all t: Tree | (t.objects.Name-Tree.hash)-Blob.hash = none
+    //Num Commit, a Tree tem de ser do tipo Tree
+    all c: Commit | c.tree in Tree.hash
+    //Num Commit, o parent tem de ser do tipo Commit
+    all c: Commit | c.parent in Commit.hash
+
+
+    //Invariante 5
+    //Uma Tree não pode ser descendente dela mesma
+    all t: Tree | t not in t.^(objects.Name.~hash)
+    //Um commit não pode estar contido nos seus parents
+    all c: Commit | c not in c.^(parent.~hash)
+  
+  
+  // Specify the properties of the git object model inside this predicate
+
+  // The number of points you will get is proportional to the number of correct properties.
+  // To check how many points you have so far you can use the different commands. The maximum is 5 points.
+  // Be careful to not overspecify! 
+  // If not all possible git object models are allowed by your spec you get 0 points, even if you have some correct properties.
+  // To check if you are not overspecifying you can use command AllModelsArePossible. 
+  // If you are overspecifying this command will return a git object model that should be possible 
+  // but that you spec is not currently accepting.
+
+}
